@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using GymBooking.Data;
 using GymBooking.Models.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GymBooking.Controllers;
 public class GymClassesController : Controller
@@ -49,6 +50,7 @@ public class GymClassesController : Controller
     }
 
     // GET: GymClasses/Create
+    [Authorize]
     public IActionResult Create()
     {
         return View();
@@ -59,6 +61,7 @@ public class GymClassesController : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Create([Bind("Id,Name,StartTime,Duration,Description")] GymClass gymClass)
     {
         if (ModelState.IsValid)
@@ -71,6 +74,7 @@ public class GymClassesController : Controller
     }
 
     // GET: GymClasses/Edit/5
+    [Authorize]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null)
@@ -91,6 +95,7 @@ public class GymClassesController : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Edit(int id, [Bind("Id,Name,StartTime,Duration,Description")] GymClass gymClass)
     {
         if (id != gymClass.Id)
@@ -122,6 +127,7 @@ public class GymClassesController : Controller
     }
 
     // GET: GymClasses/Delete/5
+    [Authorize]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null)
@@ -142,6 +148,7 @@ public class GymClassesController : Controller
     // POST: GymClasses/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var gymClass = await _context.GymClass.FindAsync(id);
@@ -155,22 +162,15 @@ public class GymClassesController : Controller
         return _context.GymClass.Any(e => e.Id == id);
     }
 
+    [Authorize]
     public async Task<IActionResult> BookingToggle(int? id)
     {
         if (id == null) return BadRequest();    // Bad request, 400
 
-        // Todo 0.2.1: find which user is logged in
         ApplicationUser user = await _userManager.GetUserAsync(User);
 
-        // Todo 0.2.1: verify user? 403 Forbidden
-
-        var att = await _context.UserGymClass.FindAsync(id, user.Id);
-        //GymClass? @class = _context.GymClass.Include(gc => gc.AttendingMembers).ToList().Find(gc => gc.Id == id);
-
-        //if (@class == null) return NotFound();  // Not found, 404
-
-        //ApplicationUserGymClass? userAttending = @class.AttendingMembers.Where(ag => ag.ApplicationUserId == user.Id).ToList().Find(am => am.ApplicationUserId == user.Id);
-
+        ApplicationUserGymClass att = await _context.UserGymClass.FindAsync(id, user.Id);
+ 
         string message;
 
         if (att == null) //Add user to gym class
@@ -179,8 +179,6 @@ public class GymClassesController : Controller
             {
                 ApplicationUserId = user.Id,
                 GymClassId = (int)id
-                //ApplicationUser = user,
-                //GymClass = @class
             };
 
             _context.UserGymClass.Add(augc);
