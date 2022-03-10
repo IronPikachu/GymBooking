@@ -1,4 +1,6 @@
 ﻿using GymBooking.Models;
+using GymBooking.Models.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
